@@ -8,6 +8,7 @@ import {
   Dimensions,
   FlatList,
   TouchableOpacity,
+  RefreshControl,
 } from "react-native"
 import BottomSheet, {
   BottomSheetView,
@@ -22,8 +23,7 @@ import {
   NewIncome,
   Icon,
 } from "../../components"
-import { CurrentRenderContext } from "@react-navigation/native"
-import { set } from "react-native-reanimated"
+import { TextInput } from "react-native-gesture-handler"
 
 const height = Dimensions.get("window").height
 const width = Dimensions.get("window").width
@@ -68,20 +68,17 @@ const Home = () => {
 
   const onPressAddExpense = () => {
     console.log("onpressaddexpense")
+    setIsOpen(false)
   }
   //! BOTTOM SHEET !//
   const sheetRef = useRef(null)
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(true)
 
   const snapPoints = ["25%"]
 
   const handleSnapPress = useCallback((index) => {
-    console.log("basıldı")
     sheetRef.current?.snapToIndex(index)
-    setIsOpen(isOpen ? false : true)
-    useEffect(() => {
-      ref_input1.current.focus()
-    }, [])
+    setIsOpen(true)
   }, [])
 
   //! FLATLISTS !//
@@ -111,66 +108,33 @@ const Home = () => {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         keyExtractor={(item) => item.id}
-        keyboardShouldPersistTaps="always"
         ref={ref_headerFlatList}
-        onMomentumScrollEnd={() => {
-          console.log("SWIPE CONTROL END")
-          // setAlltimeFocus(alltimeFocus ? false : true)
-          // setWeeklyFocus(weeklyFocus ? false : true)
-          // setMonthlyFocus(monthlyFocus ? false : true)
-        }}
-        // scrollToIndex={2}
       />
     </View>
   )
 
   //! FLATLIST FOCUSES !//
-  // const [alltimeFocus, setAlltimeFocus] = useState(true)
-  // const [weeklyFocus, setWeeklyFocus] = useState(false)
-  // const [monthlyFocus, setMonthlyFocus] = useState(false)
-  // const ref_alltime = useRef(true)
-  // const ref_weekly = useRef(false)
-  // const ref_monthly = useRef(false)
+  const [alltimeFocus, setAlltimeFocus] = useState(true)
+  const [weeklyFocus, setWeeklyFocus] = useState(false)
+  const [monthlyFocus, setMonthlyFocus] = useState(false)
 
-  const [slideState, setUseSlideState] = useState({
-    allTimeFocus: true,
-    weeklyFocus: false,
-    monthlyFocus: false,
-  })
-  const { allTimeFocus, weeklyFocus, monthlyFocus } = slideState
-
-  const opAllTime = () => {
-    setUseSlideState({
-      allTimeFocus: true,
-      weeklyFocus: false,
-      monthlyFocus: false,
-    })
-    ref_headerFlatList.current.scrollToIndex({
-      animated: true,
-      index: 0,
-      viewPosition: 10,
-    })
+  //! REFRESH TO TEXTINPUT
+  const onRefresh = () => {
+    console.log("refresh")
+    setIsHeader(false)
   }
-  const opWeekly = () => {
-    setUseSlideState({
-      allTimeFocus: false,
-      weeklyFocus: true,
-      monthlyFocus: false,
-    })
-  }
-  const opMonthly = () => {
-    setUseSlideState({
-      allTimeFocus: false,
-      weeklyFocus: false,
-      monthlyFocus: true,
-    })
-  }
+  const [refreshing, setRefreshing] = useState(false)
+  const [isHeader, setIsHeader] = useState(true)
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView style={{ flex: 1 }} keyboardShouldPersistTaps="always">
-        <CustomHeader leftText="gelirgider" />
-
+      <ScrollView
+        style={{ flex: 1 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <CustomHeader leftText="gelirgider" stateHeader={isHeader} />
         <View style={styles.incomeView}>
           <View style={styles.tohFlat}>
             <TouchableOpacity
@@ -251,57 +215,6 @@ const Home = () => {
           />
         </View>
       </ScrollView>
-      <TouchableOpacity
-        onPress={() => handleSnapPress(-1)}
-        style={styles.newIncomeButton}
-      >
-        <Icon source={require("../../../assets/icons/plus.png")} size={25} />
-      </TouchableOpacity>
-      <BottomSheet
-        ref={sheetRef}
-        snapPoints={snapPoints}
-        enablePanDownToClose={true}
-        onClose={() => setIsOpen(false)}
-        index={-1}
-        backgroundStyle={{ backgroundColor: "#1A1A1A" }}
-      >
-        <View style={styles.sheetInputView}>
-          <Icon
-            source={require("../../../assets/icons/euro.png")}
-            size={24}
-            color="#999999"
-          />
-          <BottomSheetTextInput
-            style={styles.sheetInput}
-            placeholder="new expense..."
-            placeholderTextColor="#999999"
-            keyboardType="decimal-pad"
-            keyboardShouldPersistTaps={true}
-            autoFocus={true}
-            returnKeyType="next"
-            onSubmitEditing={() => ref_input2.current.focus()}
-          />
-        </View>
-        <View style={styles.sheetInputView}>
-          <Icon
-            source={require("../../../assets/icons/description.png")}
-            size={24}
-            color="#999999"
-          />
-          <BottomSheetTextInput
-            style={styles.sheetInput}
-            placeholder="description..."
-            placeholderTextColor="#999999"
-            keyboardShouldPersistTaps={true}
-            returnKeyType="next"
-            onSubmitEditing={onPressAddExpense}
-            ref={ref_input2}
-          />
-        </View>
-        <TouchableOpacity style={styles.addExpense} onPress={onPressAddExpense}>
-          <Text>add expense</Text>
-        </TouchableOpacity>
-      </BottomSheet>
     </SafeAreaView>
   )
 }
