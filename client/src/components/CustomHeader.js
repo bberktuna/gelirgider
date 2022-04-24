@@ -6,6 +6,7 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  ScrollView,
 } from "react-native"
 
 import Icon from "./Icon"
@@ -21,13 +22,32 @@ const CustomHeader = ({
   stateHeader,
   onPressOut,
 }) => {
-  const [newExpense, setNewExpense] = useState("")
-
+  const [newAmount, setNewAmount] = useState("")
+  const [type, setType] = useState(true)
   const refButton = useRef(null)
 
-  const onPressDone = () => {
+  const [array, setArray] = useState({ ...array })
+  const onPressDone = (array, newObj) => {
     console.log("done")
+    setArray({
+      array: [
+        ...array,
+        {
+          title: Date.now(""),
+          data: [
+            {
+              id: Date.now(""),
+              amount: newAmount,
+              incomeType,
+              //description,
+              exactTime: Date.now(""),
+            },
+          ],
+        },
+      ],
+    })
   }
+
   return (
     <>
       {stateHeader ? (
@@ -47,13 +67,31 @@ const CustomHeader = ({
         </View>
       ) : (
         <View style={styles.container}>
+          <TouchableOpacity
+            onPress={() => setType(type ? false : true)}
+            style={{ position: "absolute", left: 10, zIndex: 1 }}
+          >
+            {type ? (
+              <Icon
+                source={require("../../assets/icons/plus.png")}
+                size={24}
+                color={"white"}
+              />
+            ) : (
+              <Icon
+                source={require("../../assets/icons/subtract.png")}
+                size={24}
+                color={"white"}
+              />
+            )}
+          </TouchableOpacity>
           <TextInput
             placeholder="new expense..."
             style={styles.textInput}
             placeholderTextColor={"#999999"}
             autoFocus={true}
-            value={newExpense}
-            onChangeText={(text) => setNewExpense(text)}
+            value={newAmount}
+            onChangeText={(text) => setNewAmount(text)}
             onSubmitEditing={onPressDone}
           />
           <TouchableOpacity
