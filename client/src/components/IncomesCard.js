@@ -12,28 +12,48 @@ import Icon from "./Icon"
 const height = Dimensions.get("window").height
 const width = Dimensions.get("window").width
 
-const IncomesCard = ({ incomeType, income, description }) => {
-  return <View></View>
+const IncomesCard = ({ incomeType, amount, description, day, month }) => {
+  return (
+    <View style={styles.container}>
+      {/* <Text style={styles.dateText}> {[day, " ", month]} </Text> */}
+      <Text style={styles.amountText}> {description} </Text>
+      <Text
+        style={[
+          styles.amountText2,
+          incomeType && {
+            backgroundColor: "#222D25",
+            paddingHorizontal: 3,
+            borderRadius: 5,
+            overflow: "hidden",
+          },
+        ]}
+      >
+        {[incomeType ? "+" : "-", amount, ".00"]}
+      </Text>
+    </View>
+  )
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    width: width * 0.96,
-    height: height * 0.07,
-    justifyContent: "flex-start",
-    alignItems: "center",
-    marginBottom: 5,
-    marginLeft: 5,
-    borderWidth: 2,
-    borderColor: "white",
-    borderRadius: 50,
+    width: width,
     flexDirection: "row",
-    paddingLeft: 15,
+    justifyContent: "space-between",
+    paddingVertical: 8,
+    paddingHorizontal: 20,
+    borderBottomWidth: 0.5,
+    borderColor: "#333",
+    borderBottomEndRadius: 30,
+    borderBottomStartRadius: 30,
   },
-  textStyle: {
-    fontSize: 20,
-    marginLeft: 15,
+  dateText: { color: "#999" },
+  amountText: { color: "white", fontSize: 16, paddingVertical: 1 },
+  amountText2: {
+    color: "white",
+    fontSize: 16,
+    fontWeight: "bold",
+    paddingVertical: 1,
   },
 })
 

@@ -9,13 +9,11 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  TextInput,
+  SectionList,
+  StatusBar,
 } from "react-native"
-import BottomSheet, {
-  BottomSheetView,
-  BottomSheetModal,
-  BottomSheetModalProvider,
-  BottomSheetTextInput,
-} from "@gorhom/bottom-sheet"
+
 import {
   CustomHeader,
   BalanceCard,
@@ -23,12 +21,9 @@ import {
   NewIncome,
   Icon,
 } from "../../components"
-import { TextInput } from "react-native-gesture-handler"
 
 const height = Dimensions.get("window").height
 const width = Dimensions.get("window").width
-
-// import BottomSheet from "@gorhom/bottom-sheet"
 
 const slideBalanceData = [
   {
@@ -54,48 +49,82 @@ const slideBalanceData = [
   },
 ]
 const incomesData = [
-  { id: 1, income: 5, type: true, description: "araba", date: new Date() },
-  { id: 2, income: 10, type: false, description: "çiçek", date: new Date() },
-  { id: 3, income: 15, type: true, description: "borç", date: new Date() },
-  { id: 4, income: 20, type: false, description: "kira", date: new Date() },
+  {
+    title: new Date("July 4 2022 12:30"), //"24 April",
+    data: [
+      {
+        id: 1,
+        amount: 5,
+        incomeType: true,
+        description: "car",
+        exactTime: new Date("July 4 2022 12:30"),
+      },
+      {
+        id: 2,
+        amount: 10,
+        incomeType: false,
+        description: "stuff",
+        exactTime: new Date("July 4 2022 12:30"),
+      },
+    ],
+  },
+  {
+    title: new Date("July 5 2022 12:30"), //"24 June",
+    data: [
+      {
+        id: 3,
+        amount: 15,
+        incomeType: true,
+        description: "expense",
+        exactTime: new Date("July 5 2022 12:30"),
+      },
+      {
+        id: 4,
+        amount: 20,
+        incomeType: false,
+        description: "rent",
+        exactTime: new Date("July 5 2022 12:30"),
+      },
+      {
+        id: 5,
+        amount: 25,
+        incomeType: false,
+        description: "other",
+        exactTime: new Date("July 5 2022 12:30"),
+      },
+    ],
+  },
 ]
+console.log(incomesData[0].title.getUTCDay())
+
+const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+]
+
 const Home = () => {
-  //! FOCUS REF HANDLE !//
-
-  const ref_input1 = useRef(null)
-  const ref_input2 = useRef(null)
-  const ref_headerFlatList = useRef(null)
-
-  const onPressAddExpense = () => {
-    console.log("onpressaddexpense")
-    setIsOpen(false)
-  }
-  //! BOTTOM SHEET !//
-  const sheetRef = useRef(null)
-  const [isOpen, setIsOpen] = useState(true)
-
-  const snapPoints = ["25%"]
-
-  const handleSnapPress = useCallback((index) => {
-    sheetRef.current?.snapToIndex(index)
-    setIsOpen(true)
-  }, [])
-
   //! FLATLISTS !//
   const balanceItem = ({ item }) => (
-    <BalanceCard
-      type={item.type}
-      income={item.income}
-      outcome={item.outcome}
-      balance={item.balance}
-    />
+    <BalanceCard type={item.type} amount={item.income} balance={item.balance} />
   )
 
   const incomesItem = ({ item }) => (
     <IncomesCard
-      incomeType={item.type}
-      income={item.income}
+      day={item.exactTime.getUTCDay()} //.getUTCDay()
+      month={monthNames[item.exactTime.getUTCMonth()]} //.getUTCMonth()
+      amount={item.amount}
       description={item.description}
+      incomeType={item.incomeType}
     />
   )
 
@@ -113,6 +142,17 @@ const Home = () => {
     </View>
   )
 
+  //! FOCUS REF HANDLE !//
+
+  const ref_input1 = useRef(null)
+  const ref_input2 = useRef(null)
+  const ref_headerFlatList = useRef(null)
+
+  const onPressAddExpense = () => {
+    console.log("onpressaddexpense")
+    setIsOpen(false)
+  }
+
   //! FLATLIST FOCUSES !//
   const [alltimeFocus, setAlltimeFocus] = useState(true)
   const [weeklyFocus, setWeeklyFocus] = useState(false)
@@ -128,6 +168,7 @@ const Home = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar />
       <ScrollView
         style={{ flex: 1 }}
         refreshControl={
@@ -204,14 +245,30 @@ const Home = () => {
             </TouchableOpacity>
           </View>
 
-          <FlatList
+          <SectionList
             ListHeaderComponent={HeaderFlatList}
-            data={incomesData}
+            sections={incomesData}
             renderItem={incomesItem}
             keyExtractor={(item) => item.id}
             horizontal={false}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="always"
+            renderSectionHeader={({ section }) => (
+              <View style={styles.item}>
+                <Text style={styles.text}>
+                  {[
+                    section.title.getDay(),
+                    " ",
+                    monthNames[section.title.getUTCMonth()],
+                  ]}
+                </Text>
+
+                <Text style={styles.text}>EUR</Text>
+              </View>
+            )}
+            renderSectionFooter={() => (
+              <View style={styles.sectionFooter}></View>
+            )}
           />
         </View>
       </ScrollView>
@@ -220,6 +277,8 @@ const Home = () => {
 }
 
 const styles = StyleSheet.create({
+  timeStamp: { flexDirection: "row" },
+  minitext: { color: "#999" },
   container: {
     flex: 1,
     backgroundColor: "black",
@@ -282,6 +341,23 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 10,
     borderBottomWidth: 1.5,
     borderColor: "#333",
+  },
+  item: {
+    backgroundColor: "#333",
+    flexDirection: "row",
+    justifyContent: "space-between",
+  },
+  text: {
+    color: "#999",
+    padding: 5.5,
+    fontSize: 12,
+  },
+  sectionFooter: {
+    borderWidth: 0.75,
+    borderColor: "#333",
+    borderBottomEndRadius: 100,
+    borderBottomStartRadius: 100,
+    marginBottom: 10,
   },
 })
 

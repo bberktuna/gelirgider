@@ -1,5 +1,14 @@
-import React from "react"
-import { StyleSheet, View, Dimensions, Text, TextInput } from "react-native"
+import React, { useRef, useState } from "react"
+import {
+  StyleSheet,
+  View,
+  Dimensions,
+  Text,
+  TextInput,
+  TouchableOpacity,
+} from "react-native"
+
+import Icon from "./Icon"
 
 const height = Dimensions.get("window").height
 const width = Dimensions.get("window").width
@@ -10,7 +19,15 @@ const CustomHeader = ({
   leftText,
   icon1,
   stateHeader,
+  onPressOut,
 }) => {
+  const [newExpense, setNewExpense] = useState("")
+
+  const refButton = useRef(null)
+
+  const onPressDone = () => {
+    console.log("done")
+  }
   return (
     <>
       {stateHeader ? (
@@ -35,7 +52,21 @@ const CustomHeader = ({
             style={styles.textInput}
             placeholderTextColor={"#999999"}
             autoFocus={true}
+            value={newExpense}
+            onChangeText={(text) => setNewExpense(text)}
+            onSubmitEditing={onPressDone}
           />
+          <TouchableOpacity
+            style={{ position: "absolute", right: 20 }}
+            ref={refButton}
+            onPress={onPressDone}
+          >
+            <Icon
+              source={require("../../assets/icons/done.png")}
+              size={24}
+              color={"#fff"}
+            />
+          </TouchableOpacity>
         </View>
       )}
     </>
@@ -60,7 +91,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderBottomEndRadius: 20,
     borderBottomStartRadius: 20,
-
     justifyContent: "center",
     alignItems: "center",
   },
