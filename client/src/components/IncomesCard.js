@@ -16,7 +16,9 @@ const IncomesCard = ({ incomeType, amount, description, day, month }) => {
   return (
     <View style={styles.container}>
       {/* <Text style={styles.dateText}> {[day, " ", month]} </Text> */}
-      <Text style={styles.amountText}> {description} </Text>
+      <Text style={styles.amountText}>
+        {description ? description : amount}
+      </Text>
       <Text
         style={[
           styles.amountText2,

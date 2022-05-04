@@ -13,6 +13,7 @@ import {
   SectionList,
   StatusBar,
 } from "react-native"
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
 import {
   CustomHeader,
@@ -22,9 +23,10 @@ import {
   Icon,
 } from "../../components"
 
+// import { incomesData } from "../../data/incomesData"
+
 const height = Dimensions.get("window").height
 const width = Dimensions.get("window").width
-
 const slideBalanceData = [
   {
     id: 1,
@@ -48,55 +50,6 @@ const slideBalanceData = [
     balance: 0,
   },
 ]
-const incomesData = [
-  {
-    title: new Date("July 4 2022 12:30"), //"24 April",
-    data: [
-      {
-        id: 1,
-        amount: 5,
-        incomeType: true,
-        description: "car",
-        exactTime: new Date("July 4 2022 12:30"),
-      },
-      {
-        id: 2,
-        amount: 10,
-        incomeType: false,
-        description: "stuff",
-        exactTime: new Date("July 4 2022 12:30"),
-      },
-    ],
-  },
-  {
-    title: new Date("July 5 2022 12:30"), //"24 June",
-    data: [
-      {
-        id: 3,
-        amount: 15,
-        incomeType: true,
-        description: "expense",
-        exactTime: new Date("July 5 2022 12:30"),
-      },
-      {
-        id: 4,
-        amount: 20,
-        incomeType: false,
-        description: "rent",
-        exactTime: new Date("July 5 2022 12:30"),
-      },
-      {
-        id: 5,
-        amount: 25,
-        incomeType: false,
-        description: "other",
-        exactTime: new Date("July 5 2022 12:30"),
-      },
-    ],
-  },
-]
-console.log(incomesData[0].title.getUTCDay())
-
 const monthNames = [
   "January",
   "February",
@@ -112,7 +65,77 @@ const monthNames = [
   "December",
 ]
 
+const hamDate = new Date()
+const currentYear = hamDate.getUTCFullYear()
+const currentMonth = monthNames[hamDate.getUTCMonth()]
+const currentDay = hamDate.getUTCDay() + 1
+const currentHour = hamDate.getHours()
+const currentMin = hamDate.getUTCMinutes()
+const currentSec = hamDate.getUTCSeconds()
+const currentMili = hamDate.getUTCMilliseconds()
+const currentDayMonth = currentDay + currentMonth
+const currentExact =
+  currentDay +
+  currentMonth +
+  currentYear +
+  currentHour +
+  currentMin +
+  currentSec +
+  currentMili
+
 const Home = () => {
+  const [incomesData, setIncomesData] = useState([])
+  const onPressDone = ({ newAmount, type }) => {
+    const newData = {
+      title: currentDay + currentMonth,
+      data: [
+        {
+          id: currentExact,
+          amount: newAmount,
+          incomeType: type,
+        },
+      ],
+    }
+
+    setIncomesData([...incomesData, newData])
+    console.log(incomesData)
+  }
+  // const incomesData = [{ ...newData, incomesData }]
+  // setIncomesData(() => {
+  //   incomesData.map((item, index) => {
+  //     if (item.title === currentDayMonth) {
+  //       item.data = [
+  //         item.data,
+  //         {
+  //           id: currentExact,
+  //           amount: newAmount,
+  //           incomeType: type,
+  //         },
+  //       ]
+  //     }
+  //     console.log(incomesData)
+  //   })
+  // })
+  // setIncomesData(incomesData)
+
+  const storeData = async () => {
+    try {
+      const jsonValue = JSON.stringify(...incomesData)
+      await AsyncStorage.setItem("@storage_Key", jsonValue)
+    } catch (e) {
+      // saving error
+    }
+  }
+
+  const getData = async () => {
+    try {
+      const jsonValue = await AsyncStorage.getItem("@storage_Key")
+      return jsonValue != null ? JSON.parse(jsonValue) : null
+    } catch (e) {
+      // error reading value
+    }
+  }
+
   //! FLATLISTS !//
   const balanceItem = ({ item }) => (
     <BalanceCard type={item.type} amount={item.income} balance={item.balance} />
@@ -120,8 +143,8 @@ const Home = () => {
 
   const incomesItem = ({ item }) => (
     <IncomesCard
-      day={item.exactTime.getUTCDay()} //.getUTCDay()
-      month={monthNames[item.exactTime.getUTCMonth()]} //.getUTCMonth()
+      day={item.exactTime} //.getUTCDay()
+      month={monthNames[item.exactTime]} //.getUTCMonth()
       amount={item.amount}
       description={item.description}
       incomeType={item.incomeType}
@@ -148,11 +171,6 @@ const Home = () => {
   const ref_input2 = useRef(null)
   const ref_headerFlatList = useRef(null)
 
-  const onPressAddExpense = () => {
-    console.log("onpressaddexpense")
-    setIsOpen(false)
-  }
-
   //! FLATLIST FOCUSES !//
   const [alltimeFocus, setAlltimeFocus] = useState(true)
   const [weeklyFocus, setWeeklyFocus] = useState(false)
@@ -166,6 +184,7 @@ const Home = () => {
   const [refreshing, setRefreshing] = useState(false)
   const [isHeader, setIsHeader] = useState(true)
 
+  //* RETURNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNNN
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar />
@@ -175,7 +194,11 @@ const Home = () => {
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
       >
-        <CustomHeader leftText="gelirgider" stateHeader={isHeader} />
+        <CustomHeader
+          leftText="gelirgider"
+          stateHeader={isHeader}
+          onPressDone={onPressDone}
+        />
         <View style={styles.incomeView}>
           <View style={styles.tohFlat}>
             <TouchableOpacity
@@ -206,7 +229,10 @@ const Home = () => {
               style={[
                 styles.tohOne,
                 ,
-                weeklyFocus && { borderBottomWidth: 1.5, borderColor: "white" },
+                weeklyFocus && {
+                  borderBottomWidth: 1.5,
+                  borderColor: "white",
+                },
               ]}
               onPress={() => {
                 ref_headerFlatList.current.scrollToIndex({
@@ -253,15 +279,10 @@ const Home = () => {
             horizontal={false}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="always"
+            extraData={incomesData}
             renderSectionHeader={({ section }) => (
               <View style={styles.item}>
-                <Text style={styles.text}>
-                  {[
-                    section.title.getDay(),
-                    " ",
-                    monthNames[section.title.getUTCMonth()],
-                  ]}
-                </Text>
+                <Text style={styles.text}>{section.title}</Text>
 
                 <Text style={styles.text}>EUR</Text>
               </View>

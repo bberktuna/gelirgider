@@ -6,7 +6,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
 } from "react-native"
 
 import Icon from "./Icon"
@@ -20,33 +19,12 @@ const CustomHeader = ({
   leftText,
   icon1,
   stateHeader,
-  onPressOut,
+  onPressDone,
 }) => {
-  const [newAmount, setNewAmount] = useState("")
-  const [type, setType] = useState(true)
   const refButton = useRef(null)
 
-  const [array, setArray] = useState({ ...array })
-  const onPressDone = (array, newObj) => {
-    console.log("done")
-    setArray({
-      array: [
-        ...array,
-        {
-          title: Date.now(""),
-          data: [
-            {
-              id: Date.now(""),
-              amount: newAmount,
-              incomeType,
-              //description,
-              exactTime: Date.now(""),
-            },
-          ],
-        },
-      ],
-    })
-  }
+  const [newAmount, setNewAmount] = useState("")
+  const [type, setType] = useState(true)
 
   return (
     <>
@@ -67,24 +45,6 @@ const CustomHeader = ({
         </View>
       ) : (
         <View style={styles.container}>
-          <TouchableOpacity
-            onPress={() => setType(type ? false : true)}
-            style={{ position: "absolute", left: 10, zIndex: 1 }}
-          >
-            {type ? (
-              <Icon
-                source={require("../../assets/icons/plus.png")}
-                size={24}
-                color={"white"}
-              />
-            ) : (
-              <Icon
-                source={require("../../assets/icons/subtract.png")}
-                size={24}
-                color={"white"}
-              />
-            )}
-          </TouchableOpacity>
           <TextInput
             placeholder="new expense..."
             style={styles.textInput}
@@ -92,9 +52,11 @@ const CustomHeader = ({
             autoFocus={true}
             value={newAmount}
             onChangeText={(text) => setNewAmount(text)}
-            onSubmitEditing={onPressDone}
+            onSubmitEditing={() => onPressDone({ newAmount, type })}
+            keyboardType="number-pad"
+            returnKeyType="done"
           />
-          <TouchableOpacity
+          {/* <TouchableOpacity
             style={{ position: "absolute", right: 20 }}
             ref={refButton}
             onPress={onPressDone}
@@ -104,6 +66,24 @@ const CustomHeader = ({
               size={24}
               color={"#fff"}
             />
+          </TouchableOpacity> */}
+          <TouchableOpacity
+            onPress={() => [setType(type ? false : true), console.log(type)]}
+            style={{ position: "absolute", right: 20, zIndex: 1 }}
+          >
+            {type ? (
+              <Icon
+                source={require("../../assets/icons/plus.png")}
+                size={24}
+                color={"#999"}
+              />
+            ) : (
+              <Icon
+                source={require("../../assets/icons/subtract.png")}
+                size={24}
+                color={"#999"}
+              />
+            )}
           </TouchableOpacity>
         </View>
       )}
@@ -113,7 +93,7 @@ const CustomHeader = ({
 
 const styles = StyleSheet.create({
   textInput: {
-    width: width * 0.94,
+    width: width * 0.96,
     padding: 10,
     backgroundColor: "#333",
     borderRadius: 15,
